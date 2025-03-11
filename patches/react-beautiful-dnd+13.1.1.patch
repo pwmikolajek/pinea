@@ -1,0 +1,29 @@
+diff --git a/node_modules/react-beautiful-dnd/dist/react-beautiful-dnd.esm.js b/node_modules/react-beautiful-dnd/dist/react-beautiful-dnd.esm.js
+index 9a6c54f..e5c7f1f 100644
+--- a/node_modules/react-beautiful-dnd/dist/react-beautiful-dnd.esm.js
++++ b/node_modules/react-beautiful-dnd/dist/react-beautiful-dnd.esm.js
+@@ -1703,7 +1703,6 @@ var StoreContext = React.createContext(null);
+ 
+ var Provider = (function (_React$Component) {
+   _inheritsLoose(Provider, _React$Component);
+-
+   function Provider(props) {
+     var _this;
+ 
+@@ -6970,7 +6969,6 @@ var Droppable = (function (_React$Component) {
+ }(React.Component));
+ 
+ Droppable.contextType = StoreContext;
+-Droppable.defaultProps = {
+-  type: 'DEFAULT',
+-  direction: 'vertical',
+-  isDropDisabled: false,
+-  isCombineEnabled: false,
+-  ignoreContainerClipping: false,
+-  renderClone: null
+-};
++
++// Removed defaultProps to avoid React warnings
+ 
+ var isEqual$2 = function isEqual(base) {
+   return function (value) {
