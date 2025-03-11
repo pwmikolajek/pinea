@@ -2,7 +2,7 @@
 
 Pinea is a simple set of tools to help you efficiently process your digital assets that runs entirely in your browser. No server uploads, no privacy concerns - just drag, drop, and convert.
 
-![Uploading Pinea Social.png…]()
+![Pinea Social](https://github.com/user-attachments/assets/3d8ea20f-1e61-4711-8346-c35c70a93043)
 
 ## 🌱 Environmental Impact
 
