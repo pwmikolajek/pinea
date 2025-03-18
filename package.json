@@ -14,7 +14,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "dompurify": "^3.2.4",
-    "jspdf": "^3.0.0",
+    "jspdf": "^3.0.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.344.0",
     "pdfjs-dist": "^4.2.67",
