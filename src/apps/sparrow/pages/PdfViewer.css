@@ -1,0 +1,349 @@
+.pdf-viewer-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #F7F6F3;
+  overflow: hidden;
+}
+
+.viewer-header {
+  background: #F9F8F6;
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(108,106,99,0.10);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.viewer-header h2 {
+  margin: 0;
+  flex: 1;
+  color: #3C3A33;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewer-header .version-badge {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.header-info {
+  color: #6C6A63;
+  font-size: 14px;
+}
+
+.btn-back {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #5a6268;
+}
+
+.viewer-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 150px 1fr 400px;
+  gap: 20px;
+  padding: 20px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pdf-section {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comments-section {
+  background: #F9F8F6;
+  border-radius: 15px;
+  border: 1px solid rgba(108,106,99,0.10);
+  padding: 20px;
+  box-shadow: 0px 100px 80px 0px rgba(108,106,99,0.02),
+              0px 41.778px 33.422px 0px rgba(108,106,99,0.01),
+              0px 22.336px 17.869px 0px rgba(108,106,99,0.01);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comments-section h3 {
+  margin: 0 0 20px 0;
+  color: #3C3A33;
+}
+
+.comment-form {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(108,106,99,0.10);
+  margin-bottom: 20px;
+}
+
+.comment-form h4 {
+  margin: 0 0 15px 0;
+  color: #3C3A33;
+}
+
+.comment-form textarea {
+  width: 100%;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 12px 20px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #22c55e;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #16a34a;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+.comments-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comment-item {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(108,106,99,0.10);
+}
+
+.comment-item:hover {
+  background: white;
+  border-color: #22c55e;
+  box-shadow: 0 2px 8px rgba(34,197,94,0.1);
+}
+
+.comment-item.selected {
+  border-color: #22c55e;
+  background: #dcfce7;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-header strong {
+  color: #3C3A33;
+  font-size: 14px;
+}
+
+.comment-page {
+  background: #22c55e;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.comment-content {
+  color: #6C6A63;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  word-wrap: break-word;
+}
+
+.comment-date {
+  color: #9CA3AF;
+  font-size: 12px;
+}
+
+.no-comments {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.loading-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 24px;
+  color: #666;
+}
+
+.thumbnails-section {
+  background: #F9F8F6;
+  border-radius: 15px;
+  border: 1px solid rgba(108,106,99,0.10);
+  padding: 10px;
+  box-shadow: 0px 100px 80px 0px rgba(108,106,99,0.02),
+              0px 41.778px 33.422px 0px rgba(108,106,99,0.01),
+              0px 22.336px 17.869px 0px rgba(108,106,99,0.01);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.thumbnails-section h3 {
+  margin: 0 0 10px 0;
+  color: #3C3A33;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.thumbnail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.thumbnail-item {
+  position: relative;
+  cursor: pointer;
+  border: 1px solid rgba(108,106,99,0.10);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+  background: white;
+  flex-shrink: 0;
+}
+
+.thumbnail-item:hover {
+  border-color: #22c55e;
+  box-shadow: 0 2px 8px rgba(34,197,94,0.15);
+}
+
+.thumbnail-item.active {
+  border-color: #22c55e;
+  border-width: 2px;
+  background: #dcfce7;
+}
+
+.thumbnail-canvas {
+  width: 100%;
+  display: block;
+  background: white;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.thumbnail-info {
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+}
+
+.thumbnail-page-num {
+  font-weight: 500;
+  color: #3C3A33;
+  font-size: 10px;
+}
+
+.thumbnail-comment-count {
+  background: #22c55e;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 8px;
+  font-size: 9px;
+}
+
+.thumbnail-comment-count.has-comments {
+  background: #22c55e;
+}
+
+@media (max-width: 1400px) {
+  .viewer-content {
+    grid-template-columns: 1fr 350px;
+  }
+
+  .thumbnails-section {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .viewer-content {
+    grid-template-columns: 1fr;
+  }
+
+  .comments-section {
+    height: 400px;
+  }
+
+  .thumbnails-section {
+    display: none;
+  }
+}
