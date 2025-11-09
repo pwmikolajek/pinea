@@ -47,7 +47,7 @@ const SparrowPdfViewer: React.FC = () => {
 
       // Fetch PDF details
       const pdfResponse = await pdfAPI.getById(id);
-      setPdf(pdfResponse.data.pdf);
+      setPdf(pdfResponse.data);
 
       // Set PDF URL for viewer
       const token = localStorage.getItem('sparrow_token');
@@ -57,7 +57,7 @@ const SparrowPdfViewer: React.FC = () => {
 
       // Fetch comments
       const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data.comments);
+      setComments(commentsResponse.data || []);
 
       setLoading(false);
     } catch (error) {
@@ -123,7 +123,7 @@ const SparrowPdfViewer: React.FC = () => {
 
       // Only fetch comments, not the entire PDF data
       const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data.comments);
+      setComments(commentsResponse.data || []);
     } catch (error: any) {
       console.error('Error saving comment:', error);
       setError(error.response?.data?.error || 'Failed to save comment');
@@ -141,7 +141,7 @@ const SparrowPdfViewer: React.FC = () => {
 
         // Only fetch comments, not the entire PDF data
         const commentsResponse = await commentAPI.getByPdf(id);
-        setComments(commentsResponse.data.comments);
+        setComments(commentsResponse.data || []);
       } catch (error: any) {
         console.error('Error deleting comment:', error);
         setError(error.response?.data?.error || 'Failed to delete comment');
@@ -157,7 +157,7 @@ const SparrowPdfViewer: React.FC = () => {
 
       // Refresh comments to get updated resolved status
       const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data.comments);
+      setComments(commentsResponse.data || []);
     } catch (error: any) {
       console.error('Error toggling resolved status:', error);
       setError(error.response?.data?.error || 'Failed to update comment status');
@@ -185,13 +185,13 @@ const SparrowPdfViewer: React.FC = () => {
 
       // Refresh comments to get the authoritative data from backend
       const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data.comments);
+      setComments(commentsResponse.data || []);
     } catch (error: any) {
       console.error('Error moving comment:', error);
       setError(error.response?.data?.error || 'Failed to move comment');
       // Revert on error
       const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data.comments);
+      setComments(commentsResponse.data || []);
     }
   };
 

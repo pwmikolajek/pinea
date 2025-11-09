@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileImage, FileText, Calendar, BarChart3, Sparkles, ArrowRight } from 'lucide-react';
-import logo from '../img/logo.svg';
+import { FileImage, FileText, Youtube, MessageSquare, Sparkles, ArrowRight } from 'lucide-react';
+import logo from '../assets/logo.svg';
 
 interface AppCardProps {
   title: string;
@@ -74,35 +74,35 @@ const LandingPage: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
           <AppCard
-            title="Image to PDF Converter"
+            title="Robin - Image to PDF"
             description="Convert your images to PDF with a simple drag and drop interface. Rearrange, preview, and download."
             icon={<FileImage size={24} />}
             path="/image-to-pdf"
             status="available"
           />
-          
+
           <AppCard
-            title="PDF to JPEGs Converter"
+            title="Falcon - PDF to JPEGs"
             description="Extract all pages from a PDF as high-quality JPEG images. Perfect for sharing or editing PDF content."
             icon={<FileText size={24} />}
             path="/pdf-to-jpeg"
             status="available"
           />
-          
+
           <AppCard
-            title="Meeting Notes Organizer"
-            description="Organize your meeting notes with AI-powered categorization and summarization."
-            icon={<Calendar size={24} />}
-            path="/meeting-notes"
-            status="coming-soon"
+            title="Sparrow - PDF Commenting"
+            description="Collaborate on PDFs with team members through real-time commenting. Add, drag, and resolve comments anywhere on your documents."
+            icon={<MessageSquare size={24} />}
+            path="/sparrow/login"
+            status="available"
           />
-          
+
           <AppCard
-            title="Data Visualizer"
-            description="Create beautiful charts and graphs from your data without any coding knowledge."
-            icon={<BarChart3 size={24} />}
-            path="/data-visualizer"
-            status="coming-soon"
+            title="Swift - YouTube Downloader"
+            description="Download YouTube videos for your marketing and content creation needs with a simple interface."
+            icon={<Youtube size={24} />}
+            path="/yt-dlp"
+            status="available"
           />
         </div>
         

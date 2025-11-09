@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { ImageFile } from '../types';
 import { TreePine } from 'lucide-react';
-import addIcon from '../img/add.svg';
+import addIcon from '../../../core/assets/add.svg';
 
 interface DropZoneProps {
   onImagesAdded: (images: ImageFile[]) => void;

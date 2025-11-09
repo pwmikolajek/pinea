@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
-import logo from '../../../img/logo.svg';
+import logo from '../../../core/assets/logo.svg';
 import './Auth.css';
 
 const SparrowLogin: React.FC = () => {

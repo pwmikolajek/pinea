@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
 import { pdfAPI } from '../services/api';
 import { PDF } from '../types';
-import logo from '../../../img/logo.svg';
+import logo from '../../../core/assets/logo.svg';
 import './Dashboard.css';
 
 const SparrowDashboard: React.FC = () => {
@@ -26,7 +26,7 @@ const SparrowDashboard: React.FC = () => {
   const fetchPdfs = async () => {
     try {
       const response = await pdfAPI.getAll();
-      setPdfs(response.data.pdfs);
+      setPdfs(response.data || []);
     } catch (error: any) {
       console.error('Error fetching PDFs:', error);
       setError('Failed to fetch PDFs');
