@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { FileText } from 'lucide-react';
-import addIcon from '../img/add.svg';
+import addIcon from '../../../core/assets/add.svg';
 
 interface PdfDropZoneProps {
   onPdfSelected: (file: File) => void;

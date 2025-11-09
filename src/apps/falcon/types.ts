@@ -1,9 +1,3 @@
-export interface ImageFile {
-  id: string;
-  file: File;
-  preview: string;
-}
-
 export interface PdfPageImage {
   id: string;
   pageNumber: number;

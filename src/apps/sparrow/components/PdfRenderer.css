@@ -203,17 +203,9 @@
 }
 
 .comment-marker.resolved .comment-marker-icon {
-  background: white;
+  background: #22c55e;
   border-color: #22c55e;
   border-width: 3px;
-}
-
-.comment-marker.resolved .comment-marker-icon::after {
-  content: '✓';
-  position: absolute;
-  font-size: 14px;
-  font-weight: bold;
-  color: #22c55e;
 }
 
 .comment-marker-icon {

@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileDown, Loader2, Download, Settings } from 'lucide-react';
-import logo from '../img/logo.svg';
+import logo from '../../../core/assets/logo.svg';
 import PdfDropZone from '../components/PdfDropZone';
 import ExtractedImagesList from '../components/ExtractedImagesList';
 import { PdfPageImage } from '../types';
 import { extractImagesFromPdf, calculateTotalImageSize } from '../utils/pdfExtractor';
-import { formatEnvironmentalImpact, calculateEnvironmentalImpact } from '../utils/environmentalImpact';
+import { formatEnvironmentalImpact, calculateEnvironmentalImpact } from '../../../core/utils/environmentalImpact';
 import JSZip from 'jszip';
 
 function PdfToJpeg() {
@@ -160,7 +160,7 @@ function PdfToJpeg() {
             Back to Apps
           </Link>
           
-          <h1 className="text-2xl font-medium text-[#6C6A63]">PDF to JPEGs Converter</h1>
+          <h1 className="text-2xl font-medium text-[#6C6A63]">Falcon - PDF to JPEGs</h1>
           
           <div className="flex items-center">
             <img src={logo} alt="Pinea Logo" className="h-8" />

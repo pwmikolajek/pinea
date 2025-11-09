@@ -1,174 +1,204 @@
-# 🌲 Pinea
+# Pinea 🌲
 
-Pinea is a suite of browser-based productivity tools designed to help you work with digital documents efficiently and privately.
+**Simple, elegant tools that help you work more naturally with your digital content.**
 
-![Pinea Social](https://github.com/user-attachments/assets/3d8ea20f-1e61-4711-8346-c35c70a93043)
+Pinea is a suite of browser-based productivity tools designed to make digital work feel natural and enjoyable. All processing happens locally in your browser - your files never leave your device.
 
-## 🛠️ Tools
+## Features
 
-### Image to PDF Converter
-Convert multiple images into a single PDF document - all in your browser.
-- **Drag & Drop Interface**: Easily add images by dragging them into the app
-- **Image Reordering**: Arrange your images in any order by dragging them
-- **Client-side Processing**: No server uploads, complete privacy
-- **Environmental Impact**: See how many trees you're saving by going digital
-- **Instant Download**: Get your PDF immediately after conversion
+### 🐦 Bird-Themed Microtools
 
-### PDF to JPEG Converter
-Extract pages from PDFs as JPEG images.
-- **Client-side Processing**: Everything happens in your browser
-- **Batch Export**: Convert all pages at once
-- **High Quality**: Maintain image quality during conversion
+- **Robin** - Image to PDF Converter
+- **Falcon** - PDF to JPEG Extractor
+- **Sparrow** - Collaborative PDF Commenting
+- **Swift** - YouTube Video Downloader
 
-### Sparrow - PDF Commenting
-Collaborate on PDF documents with team members through real-time commenting.
-- **Position-based Comments**: Click anywhere on the PDF to add comments
-- **Draggable Markers**: Reposition comment markers by dragging them
-- **Real-time Collaboration**: Multiple users can comment simultaneously
-- **Resolved Comments**: Mark comments as resolved with checkmarks
-- **Page Thumbnails**: Quick navigation with thumbnail preview sidebar
-- **User Authentication**: Secure login system with JWT tokens
-- **Email Notifications**: Get notified when new comments are added
+### 🔒 Privacy-First
+All file processing happens entirely in your browser. No uploads, no servers, just pure client-side magic.
 
-## ✨ Key Features
+### 🌱 Eco-Friendly
+Track the environmental impact of going digital. See how many trees you're saving by not printing.
 
-- **Privacy-First**: Core tools process everything client-side (except Sparrow which requires backend for collaboration)
-- **Modern UI**: Clean, intuitive interface with Pinea's warm beige design system
-- **Modular Architecture**: Each app is self-contained and independently maintainable
-- **TypeScript**: Full type safety across the entire codebase
+### 🎨 Beautiful UI
+Clean, intuitive interfaces built with Tailwind CSS and modern React patterns.
 
-## 🚀 Getting Started
+## Tech Stack
 
-### Prerequisites
+- **Frontend**: React 18, TypeScript, Vite
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS
+- **PDF Processing**: pdf-lib, pdfjs-dist
+- **Drag & Drop**: @dnd-kit
+- **Backend**: Node.js, Express (for Swift - YouTube downloader)
 
-- Node.js (v16 or higher)
-- npm or yarn
-- PostgreSQL (only if using Sparrow)
+## Project Structure
 
-### Installation
+```
+pinea/
+├── src/
+│   ├── apps/                    # Modular bird-themed applications
+│   │   ├── robin/              # Image to PDF
+│   │   │   ├── components/
+│   │   │   ├── pages/
+│   │   │   ├── utils/
+│   │   │   └── types.ts
+│   │   ├── falcon/             # PDF to JPEGs
+│   │   │   ├── components/
+│   │   │   ├── pages/
+│   │   │   ├── utils/
+│   │   │   └── types.ts
+│   │   ├── sparrow/            # PDF Commenting
+│   │   │   ├── components/
+│   │   │   ├── contexts/
+│   │   │   ├── pages/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   └── swift/              # YouTube Downloader
+│   │       └── pages/
+│   ├── core/                   # Shared resources
+│   │   ├── assets/            # Images, icons
+│   │   ├── components/        # Landing page, etc.
+│   │   ├── styles/            # Global CSS
+│   │   └── utils/             # Shared utilities
+│   └── main.tsx               # App entry point
+├── backend/                    # Swift backend (YouTube downloader)
+└── public/                     # Static assets
+```
 
-1. Clone the repository:
+## Installation
+
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/pwmikolajek/pinea.git
+   git clone https://github.com/yourusername/pinea.git
    cd pinea
    ```
 
-2. Install dependencies:
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. Start the development server:
+3. **Install backend dependencies** (for Swift - YouTube downloader)
+   ```bash
+   cd backend
+   npm install
+   cd ..
+   ```
+
+## Usage
+
+### Development
+
+1. **Start the frontend dev server**
    ```bash
    npm run dev
    ```
+   Open http://localhost:5173
 
-4. Open your browser and navigate to:
-   ```
-   http://localhost:5173
-   ```
-
-### Setting up Sparrow (Optional)
-
-Sparrow requires a separate backend for collaboration features.
-
-1. Navigate to the backend directory:
+2. **Start the backend server** (optional - only needed for Swift)
    ```bash
-   cd "/path/to/Sparrow v2/backend"
+   cd backend
+   node server.js
    ```
+   Backend runs on http://localhost:5002
 
-2. Install backend dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up PostgreSQL database:
-   ```bash
-   createdb pdf_comments
-   ```
-
-4. Create `.env` file in the backend directory:
-   ```
-   DATABASE_URL=postgresql://username:password@localhost:5432/pdf_comments
-   JWT_SECRET=your-secret-key
-   PORT=5001
-   ```
-
-5. Start the backend server:
-   ```bash
-   npm start
-   ```
-
-6. Create `.env` file in Pinea root directory:
-   ```
-   VITE_SPARROW_API_URL=http://localhost:5001/api
-   ```
-
-7. Restart the Pinea dev server to use Sparrow
-
-## 🛠️ Building for Production
-
-To create a production build:
+### Production
 
 ```bash
 npm run build
-# or
-yarn build
+npm run preview
 ```
 
-The build files will be in the `dist` directory, ready to be deployed to any static hosting service.
+## Applications
 
-## 🧪 Technologies Used
+### Robin - Image to PDF
 
-### Frontend
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Fast build tool
-- **Tailwind CSS** - Styling
-- **React Router v6** - Routing
-- **PDF.js** - PDF rendering
-- **jsPDF** - PDF generation
-- **JSZip** - ZIP file handling
-- **Lucide React** - Icons
-- **dnd-kit** - Drag and drop
+Convert multiple images (JPEG, PNG) into a single PDF document.
 
-### Backend (Sparrow only)
-- **Node.js + Express** - API server
-- **PostgreSQL** - Database
-- **JWT** - Authentication
-- **Nodemailer** - Email notifications
+**Features:**
+- Drag & drop interface
+- Reorder images before conversion
+- Image preview thumbnails
+- Environmental impact tracking
 
-## 📁 Project Structure
+**Usage:** Navigate to `/image-to-pdf`
 
-```
-src/
-├── apps/                    # Self-contained applications
-│   └── sparrow/            # PDF Commenting app
-│       ├── components/     # Sparrow-specific components
-│       ├── pages/         # Sparrow pages
-│       ├── contexts/      # Authentication context
-│       ├── services/      # API calls
-│       ├── types/         # TypeScript types
-│       └── routes.tsx     # Sparrow routing
-├── components/             # Shared components
-├── pages/                  # Core Pinea pages
-│   ├── LandingPage.tsx    # Main landing page
-│   ├── PdfToJpeg.tsx      # PDF to JPEG converter
-│   └── ...
-├── App.tsx                 # Image to PDF converter
-└── main.tsx                # Main entry point
-```
+### Falcon - PDF to JPEGs
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
+Extract all pages from a PDF as high-quality JPEG images.
 
-## 📝 License
+**Features:**
+- Adjustable quality settings (10% - 100%)
+- Resolution scaling (0.5x - 3x)
+- Download individual pages or all as ZIP
+- Preview extracted images
+- Environmental impact tracking
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+**Usage:** Navigate to `/pdf-to-jpeg`
 
-## 🌍 Contributing
+### Sparrow - PDF Commenting
 
-Contributions are welcome! Feel free to open issues or submit pull requests to help improve Pinea.
+Collaborate on PDFs with real-time commenting.
+
+**Features:**
+- Drag & drop comments anywhere on PDF
+- Real-time collaboration
+- Comment resolution tracking
+- User authentication
+- PDF version management
+
+**Usage:** Navigate to `/sparrow/login`
+
+**Note:** Requires separate backend server (not included in this repo)
+
+### Swift - YouTube Downloader
+
+Download YouTube videos for your content creation needs.
+
+**Features:**
+- Multiple quality options (Best, 1080p, 720p)
+- Audio-only extraction
+- Progress tracking
+- Direct download to your device
+
+**Usage:** Navigate to `/yt-dlp`
+
+**Note:** Requires backend server running on port 5002
+
+## Environment Variables
+
+No environment variables needed for basic functionality. All apps work entirely in the browser except Swift (YouTube downloader).
+
+## Browser Support
+
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this project for personal or commercial purposes.
+
+## Privacy & Security
+
+All file processing for Robin, Falcon happens entirely in your browser using:
+- **Client-side libraries**: pdf-lib, pdfjs-dist, jspdf
+- **No server uploads**: Your files never leave your device
+- **No tracking**: No analytics or tracking scripts
+
+For Sparrow and Swift, minimal data is sent to backend servers for collaboration and video downloading features.
+
+## Acknowledgments
+
+- Built with React, TypeScript, and Vite
+- PDF processing powered by pdf-lib and pdfjs-dist
+- Icons from Lucide React
+- Styling with Tailwind CSS
 
 ---
 
-Built with 💚 for productivity and privacy
+Made with 💚 for a greener planet

@@ -177,24 +177,42 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
     onAddComment(currentPage, x, y);
   };
 
-  // Mouse-based drag handlers (more reliable than HTML5 drag API, especially in Safari)
-  const handleMouseDown = (e: React.MouseEvent, comment: Comment) => {
+  // Unified pointer event handlers (works for both mouse and touch, especially reliable in Safari)
+  const handlePointerDown = (e: React.PointerEvent | React.MouseEvent | React.TouchEvent, comment: Comment) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
     setDraggingComment(comment);
     setHoveredComment(null);
+
+    // Prevent text selection during drag
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent | React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !draggingComment) return;
+    e.preventDefault();
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+
+    // Get coordinates from either mouse or touch event
+    let clientX: number, clientY: number;
+    if ('touches' in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ('clientX' in e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    } else {
+      return;
+    }
+
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
 
     // Clamp to 0-1 range
     const clampedX = Math.max(0, Math.min(1, x));
@@ -203,15 +221,35 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
     setTempPosition({ x: clampedX, y: clampedY });
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerUp = (e: React.PointerEvent | React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !draggingComment) return;
+    e.preventDefault();
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+
+    // Get coordinates from either mouse or touch event
+    let clientX: number, clientY: number;
+    if ('changedTouches' in e && e.changedTouches.length > 0) {
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    } else if ('clientX' in e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    } else {
+      // If we can't get coordinates, just cancel the drag
+      setIsDragging(false);
+      setDraggingComment(null);
+      setTempPosition(null);
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      return;
+    }
+
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
 
     // Clamp to 0-1 range
     const clampedX = Math.max(0, Math.min(1, x));
@@ -224,6 +262,10 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
     setIsDragging(false);
     setDraggingComment(null);
     setTempPosition(null);
+
+    // Restore text selection
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
   };
 
   const handlePrevPage = () => {
@@ -287,9 +329,12 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
         ) : (
           <div
             className="pdf-canvas-wrapper"
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseMove={handlePointerMove}
+            onMouseUp={handlePointerUp}
+            onMouseLeave={handlePointerUp}
+            onTouchMove={handlePointerMove}
+            onTouchEnd={handlePointerUp}
+            onTouchCancel={handlePointerUp}
           >
             <canvas
               ref={canvasRef}
@@ -312,7 +357,8 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
                       left: `${xPos * 100}%`,
                       top: `${yPos * 100}%`,
                     }}
-                    onMouseDown={(e) => handleMouseDown(e, comment)}
+                    onMouseDown={(e) => handlePointerDown(e, comment)}
+                    onTouchStart={(e) => handlePointerDown(e, comment)}
                     onClick={(e) => {
                       if (!isDragging) {
                         e.stopPropagation();

@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ImageFile } from './types';
-import DropZone from './components/DropZone';
-import ImageList from './components/ImageList';
-import { generatePDF } from './utils/pdfGenerator';
+import { ImageFile } from '../types';
+import DropZone from '../components/DropZone';
+import ImageList from '../components/ImageList';
+import { generatePDF } from '../utils/pdfGenerator';
 import { FileDown, Loader2, FilePlus2, ArrowLeft } from 'lucide-react';
-import logo from './img/logo.svg';
-import { calculateEnvironmentalImpact, formatEnvironmentalImpact } from './utils/environmentalImpact';
+import logo from '../../../core/assets/logo.svg';
+import { calculateEnvironmentalImpact, formatEnvironmentalImpact } from '../../../core/utils/environmentalImpact';
 
 function App() {
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -113,7 +113,7 @@ function App() {
             Back to Apps
           </Link>
           
-          <h1 className="text-2xl font-medium text-[#6C6A63]">Image to PDF Converter</h1>
+          <h1 className="text-2xl font-medium text-[#6C6A63]">Robin - Image to PDF</h1>
           
           <div className="flex items-center">
             <img src={logo} alt="Pinea Logo" className="h-8" />
