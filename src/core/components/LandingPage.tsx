@@ -112,9 +112,9 @@ const LandingPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">100% Private</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Privacy First</h3>
               <p className="text-[#6C6A63]">
-                All processing happens in your browser. Your files never leave your device.
+                Most tools process locally in your browser. Collaboration features use secure cloud storage.
               </p>
             </div>
             <div>
@@ -136,7 +136,7 @@ const LandingPage: React.FC = () => {
           <p>
             Pinea - Made with 💚 for a greener planet
             <br />
-            All processing happens in your browser. Your files never leave your device.
+            Most tools process locally. Collaboration features use secure cloud storage.
           </p>
         </footer>
       </div>
