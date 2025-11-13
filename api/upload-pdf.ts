@@ -13,6 +13,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Check if Blob token is configured
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is not set');
+      return res.status(500).json({ error: 'Storage not configured. Please enable Vercel Blob in your project settings.' });
+    }
+
     const filename = req.query.filename as string;
     const userId = req.query.userId as string;
 

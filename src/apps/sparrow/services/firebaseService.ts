@@ -35,8 +35,16 @@ export const pdfService = {
       );
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-        throw new Error(error.error || 'Upload failed');
+        const errorText = await response.text();
+        let errorMessage = 'Upload failed';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error('Upload error response:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const { url } = await response.json();
