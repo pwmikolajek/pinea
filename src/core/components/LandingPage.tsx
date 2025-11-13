@@ -68,7 +68,7 @@ const LandingPage: React.FC = () => {
           </div>
           <p className="text-sm text-[#6C6A63] max-w-2xl mx-auto">
             Simple, elegant tools that help you work more naturally with your digital content.
-            No servers, no uploads, just pure browser-based magic. 🌲
+            Most tools run locally in your browser, while collaboration features use secure cloud storage. 🌲
           </p>
         </div>
         
