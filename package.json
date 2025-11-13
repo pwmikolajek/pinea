@@ -17,6 +17,7 @@
     "axios": "^1.13.2",
     "dompurify": "^3.2.4",
     "firebase": "^12.5.0",
+    "formidable": "^3.5.4",
     "jspdf": "^3.0.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.344.0",
