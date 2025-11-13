@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
-import { pdfAPI } from '../services/api';
+import { pdfService } from '../services/firebaseService';
 import { PDF } from '../types';
 import logo from '../../../core/assets/logo.svg';
 import './Dashboard.css';
 
+type PDFWithFirebase = PDF & { _docId: string; _downloadURL: string };
+
 const SparrowDashboard: React.FC = () => {
-  const [pdfs, setPdfs] = useState<PDF[]>([]);
+  const [pdfs, setPdfs] = useState<PDFWithFirebase[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -25,8 +27,8 @@ const SparrowDashboard: React.FC = () => {
 
   const fetchPdfs = async () => {
     try {
-      const response = await pdfAPI.getAll();
-      setPdfs(response.data || []);
+      const fetchedPdfs = await pdfService.getAll();
+      setPdfs(fetchedPdfs);
     } catch (error: any) {
       console.error('Error fetching PDFs:', error);
       setError('Failed to fetch PDFs');
@@ -59,7 +61,7 @@ const SparrowDashboard: React.FC = () => {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!file || !title) {
+    if (!file || !title || !user) {
       setError('Please provide both title and file');
       return;
     }
@@ -67,27 +69,23 @@ const SparrowDashboard: React.FC = () => {
     setUploading(true);
     setError('');
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('title', title);
-
     try {
-      await pdfAPI.upload(formData);
+      await pdfService.upload(file, title, user.email, user.name);
       setTitle('');
       setFile(null);
       setShowUploadForm(false);
       fetchPdfs();
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to upload PDF');
+      setError(error.message || 'Failed to upload PDF');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (docId: string) => {
     if (window.confirm('Are you sure you want to delete this PDF?')) {
       try {
-        await pdfAPI.delete(String(id));
+        await pdfService.delete(docId);
         fetchPdfs();
       } catch (error) {
         console.error('Error deleting PDF:', error);
@@ -193,7 +191,7 @@ const SparrowDashboard: React.FC = () => {
           ) : (
             <div className="pdf-grid">
               {pdfs.map((pdf) => (
-                <div key={pdf.id} className="pdf-card">
+                <div key={pdf._docId} className="pdf-card">
                   <div className="pdf-card-header">
                     <h3>
                       {pdf.base_title || pdf.title}
@@ -214,15 +212,13 @@ const SparrowDashboard: React.FC = () => {
                   <div className="pdf-card-actions">
                     <button
                       className="btn-view"
-                      onClick={() => navigate(`/sparrow/pdf/${pdf.id}`)}
+                      onClick={() => navigate(`/sparrow/pdf/${pdf._docId}`)}
                     >
                       View & Comment
                     </button>
-                    {pdf.uploader_id === user?.id && (
-                      <button className="btn-delete" onClick={() => handleDelete(pdf.id)}>
-                        Delete
-                      </button>
-                    )}
+                    <button className="btn-delete" onClick={() => handleDelete(pdf._docId)}>
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}

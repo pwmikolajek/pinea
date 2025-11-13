@@ -13,7 +13,7 @@ interface PdfRendererProps {
   externalPage?: number;
   onAddComment: (pageNumber: number, x: number, y: number) => void;
   onCommentClick: (comment: Comment) => void;
-  onToggleResolved: (commentId: number) => void;
+  onToggleResolved: (comment: Comment) => void;
   onCommentMove: (comment: Comment, x: number, y: number) => void;
   onPdfLoad?: (pdfDoc: pdfjsLib.PDFDocumentProxy) => void;
   onPageChange?: (page: number) => void;
@@ -394,7 +394,7 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
                           checked={comment.resolved || false}
                           onChange={(e) => {
                             e.stopPropagation();
-                            onToggleResolved(comment.id);
+                            onToggleResolved(comment);
                           }}
                           onClick={(e) => e.stopPropagation()}
                         />

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
-import { pdfAPI, commentAPI } from '../services/api';
+import { pdfService, commentService } from '../services/firebaseService';
 import PdfRenderer from '../components/PdfRenderer';
 import PdfThumbnails from '../components/PdfThumbnails';
 import { PDF, Comment, CommentData } from '../types';
 import * as pdfjsLib from 'pdfjs-dist';
 import './PdfViewer.css';
+
+type CommentWithFirebase = Comment & { _docId: string };
 
 const SparrowPdfViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,10 +20,10 @@ const SparrowPdfViewer: React.FC = () => {
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentWithFirebase[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+  const [selectedComment, setSelectedComment] = useState<CommentWithFirebase | null>(null);
   const [commentData, setCommentData] = useState<CommentData>({
     content: '',
     page_number: 1,
@@ -45,19 +47,21 @@ const SparrowPdfViewer: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch PDF details
-      const pdfResponse = await pdfAPI.getById(id);
-      setPdf(pdfResponse.data);
+      // Fetch PDF details from Firebase
+      const pdfData = await pdfService.getById(id);
+      if (!pdfData) {
+        setError('PDF not found');
+        setLoading(false);
+        return;
+      }
 
-      // Set PDF URL for viewer
-      const token = localStorage.getItem('sparrow_token');
-      const baseUrl =
-        import.meta.env.VITE_SPARROW_API_URL || 'http://localhost:5000/api';
-      setPdfUrl(`${baseUrl}/pdfs/${id}/download?token=${token}`);
+      setPdf(pdfData);
+      // Use Firebase download URL
+      setPdfUrl(pdfData._downloadURL);
 
       // Fetch comments
-      const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data || []);
+      const commentsData = await commentService.getByPdf(id);
+      setComments(commentsData);
 
       setLoading(false);
     } catch (error) {
@@ -100,20 +104,25 @@ const SparrowPdfViewer: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!id) return;
+    if (!id || !user) return;
 
     try {
       if (selectedComment) {
         // Update existing comment
-        await commentAPI.update(selectedComment.id, {
+        await commentService.update(selectedComment._docId, {
           content: commentData.content,
         });
       } else {
         // Create new comment
-        await commentAPI.create({
-          pdf_id: parseInt(id),
-          ...commentData,
-        });
+        await commentService.create(
+          id,
+          commentData.content,
+          commentData.page_number,
+          commentData.x_position,
+          commentData.y_position,
+          user.email,
+          user.name
+        );
       }
 
       setShowCommentForm(false);
@@ -121,12 +130,12 @@ const SparrowPdfViewer: React.FC = () => {
       setPreviewComment(null);
       setCommentData({ content: '', page_number: 1, x_position: 0, y_position: 0 });
 
-      // Only fetch comments, not the entire PDF data
-      const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data || []);
+      // Refresh comments
+      const commentsData = await commentService.getByPdf(id);
+      setComments(commentsData);
     } catch (error: any) {
       console.error('Error saving comment:', error);
-      setError(error.response?.data?.error || 'Failed to save comment');
+      setError(error.message || 'Failed to save comment');
     }
   };
 
@@ -135,68 +144,68 @@ const SparrowPdfViewer: React.FC = () => {
 
     if (window.confirm('Are you sure you want to delete this comment?')) {
       try {
-        await commentAPI.delete(selectedComment.id);
+        await commentService.delete(selectedComment._docId);
         setShowCommentForm(false);
         setSelectedComment(null);
 
-        // Only fetch comments, not the entire PDF data
-        const commentsResponse = await commentAPI.getByPdf(id);
-        setComments(commentsResponse.data || []);
+        // Refresh comments
+        const commentsData = await commentService.getByPdf(id);
+        setComments(commentsData);
       } catch (error: any) {
         console.error('Error deleting comment:', error);
-        setError(error.response?.data?.error || 'Failed to delete comment');
+        setError(error.message || 'Failed to delete comment');
       }
     }
   };
 
-  const handleToggleResolved = async (commentId: number) => {
+  const handleToggleResolved = async (comment: CommentWithFirebase) => {
     if (!id) return;
 
     try {
-      await commentAPI.toggleResolved(commentId);
+      await commentService.toggleResolved(comment._docId);
 
       // Refresh comments to get updated resolved status
-      const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data || []);
+      const commentsData = await commentService.getByPdf(id);
+      setComments(commentsData);
     } catch (error: any) {
       console.error('Error toggling resolved status:', error);
-      setError(error.response?.data?.error || 'Failed to update comment status');
+      setError(error.message || 'Failed to update comment status');
     }
   };
 
-  const handleCommentMove = async (comment: Comment, x: number, y: number) => {
+  const handleCommentMove = async (comment: CommentWithFirebase, x: number, y: number) => {
     if (!id) return;
 
     // Optimistically update the UI immediately
     setComments(prevComments =>
       prevComments.map(c =>
-        c.id === comment.id
+        c._docId === comment._docId
           ? { ...c, x_position: x, y_position: y }
           : c
       )
     );
 
     try {
-      await commentAPI.update(comment.id, {
+      await commentService.update(comment._docId, {
         content: comment.content,
         x_position: x,
         y_position: y,
       });
 
-      // Refresh comments to get the authoritative data from backend
-      const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data || []);
+      // Refresh comments to get the authoritative data
+      const commentsData = await commentService.getByPdf(id);
+      setComments(commentsData);
     } catch (error: any) {
       console.error('Error moving comment:', error);
-      setError(error.response?.data?.error || 'Failed to move comment');
+      setError(error.message || 'Failed to move comment');
       // Revert on error
-      const commentsResponse = await commentAPI.getByPdf(id);
-      setComments(commentsResponse.data || []);
+      const commentsData = await commentService.getByPdf(id);
+      setComments(commentsData);
     }
   };
 
-  const canEditComment = (comment: Comment) => {
-    return comment.user_id === user?.id;
+  const canEditComment = (comment: CommentWithFirebase) => {
+    return comment.user_name === user?.name || comment.user_id === user?.id;
   };
 
   const formatDate = (dateString: string) => {
