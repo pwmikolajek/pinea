@@ -1,4 +1,4 @@
-import { handleUpload } from '@vercel/blob/client';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -13,19 +13,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Storage not configured. Please enable Vercel Blob in your project settings.' });
     }
 
-    const body = req.body;
-    const { filename } = body;
+    const body = req.body as HandleUploadBody;
 
-    if (!filename) {
-      return res.status(400).json({ error: 'Missing filename' });
-    }
-
-    // Generate client upload URL
+    // Generate client upload token
     const jsonResponse = await handleUpload({
-      request: req,
       body,
-      onBeforeGenerateToken: async () => {
-        // Here you can add authentication checks
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        // Validate that it's a PDF in the right location
+        if (!pathname.endsWith('.pdf')) {
+          throw new Error('Only PDF files are allowed');
+        }
+
         return {
           allowedContentTypes: ['application/pdf'],
           maximumSizeInBytes: 50 * 1024 * 1024, // 50MB max
