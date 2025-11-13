@@ -19,28 +19,33 @@ export const pdfService = {
   // Upload a PDF file
   upload: async (file: File, title: string, userId: string, userName: string): Promise<PDF> => {
     try {
-      // Upload to Vercel Blob via API
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('userId', userId);
+      // Upload directly to Vercel Blob using client upload
+      const timestamp = Date.now();
+      const filename = `${timestamp}_${file.name}`;
 
-      const response = await fetch('/api/upload-pdf', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `/api/upload-pdf?filename=${encodeURIComponent(filename)}&userId=${encodeURIComponent(userId)}`,
+        {
+          method: 'POST',
+          body: file,
+          headers: {
+            'Content-Type': 'application/pdf',
+          },
+        }
+      );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
         throw new Error(error.error || 'Upload failed');
       }
 
-      const { url, pathname } = await response.json();
+      const { url } = await response.json();
 
       // Create PDF metadata in Firestore
       const pdfData = {
         title,
         filename: file.name,
-        file_path: pathname,
+        file_path: url,
         download_url: url,
         uploader_id: userId,
         uploader_name: userName,

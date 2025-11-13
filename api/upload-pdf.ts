@@ -1,7 +1,5 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import formidable from 'formidable';
-import { readFileSync } from 'fs';
 
 export const config = {
   api: {
@@ -15,39 +13,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Parse the form data using formidable
-    const form = formidable({ multiples: false });
+    const filename = req.query.filename as string;
+    const userId = req.query.userId as string;
 
-    const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
-      form.parse(req as any, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve([fields, files]);
-      });
-    });
-
-    // Get the uploaded file
-    const fileArray = files.file;
-    if (!fileArray || fileArray.length === 0) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    if (!filename || !userId) {
+      return res.status(400).json({ error: 'Missing filename or userId' });
     }
 
-    const file = Array.isArray(fileArray) ? fileArray[0] : fileArray;
-    const userIdArray = fields.userId;
-    const userId = Array.isArray(userIdArray) ? userIdArray[0] : (userIdArray || 'unknown');
-
-    // Read file content
-    const fileContent = readFileSync(file.filepath);
-    const filename = file.originalFilename || `pdf-${Date.now()}.pdf`;
+    // Read the request body as a buffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
 
     // Upload to Vercel Blob
-    const blob = await put(`pdfs/${userId}/${filename}`, fileContent, {
+    const blob = await put(`pdfs/${userId}/${filename}`, buffer, {
       access: 'public',
       contentType: 'application/pdf',
     });
 
     return res.status(200).json({
       url: blob.url,
-      pathname: blob.pathname,
     });
   } catch (error: any) {
     console.error('Upload error:', error);
