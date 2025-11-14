@@ -7,6 +7,7 @@ interface PdfThumbnailsProps {
   currentPage: number;
   onPageClick: (pageNum: number) => void;
   comments: Comment[];
+  showResolvedComments?: boolean;
 }
 
 const PdfThumbnails: React.FC<PdfThumbnailsProps> = ({
@@ -14,6 +15,7 @@ const PdfThumbnails: React.FC<PdfThumbnailsProps> = ({
   currentPage,
   onPageClick,
   comments,
+  showResolvedComments = true,
 }) => {
   const [thumbnails, setThumbnails] = useState<number[]>([]);
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
@@ -98,7 +100,11 @@ const PdfThumbnails: React.FC<PdfThumbnailsProps> = ({
   }, [pdfDoc, thumbnails]);
 
   const getCommentsForPage = (pageNum: number) => {
-    return comments.filter((comment) => comment.page_number === pageNum).length;
+    return comments.filter(
+      (comment) =>
+        comment.page_number === pageNum &&
+        (showResolvedComments || !comment.resolved)
+    ).length;
   };
 
   if (!pdfDoc) return null;

@@ -53,7 +53,7 @@ const SparrowRegister: React.FC = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center text-[#6C6A63] hover:text-[#3C3A33] transition-colors"
+            className="inline-flex items-center text-[#2E822E] hover:text-[#257525] transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Apps
@@ -86,7 +86,7 @@ const SparrowRegister: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6C6A63]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2E822E]"
                 placeholder={isLocalDevMode ? "Any Name (dev mode)" : "Your Name"}
               />
             </div>
@@ -101,7 +101,7 @@ const SparrowRegister: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6C6A63]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2E822E]"
                 placeholder={isLocalDevMode ? "any@email.com (dev mode)" : "your@email.com"}
               />
             </div>
@@ -116,7 +116,7 @@ const SparrowRegister: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6C6A63]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2E822E]"
                 placeholder={isLocalDevMode ? "any password (dev mode)" : "••••••••"}
               />
             </div>
@@ -124,7 +124,7 @@ const SparrowRegister: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#6C6A63] text-white py-2 px-4 rounded-md hover:bg-[#3C3A33] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-[#2E822E] text-white py-2 px-4 rounded-md hover:bg-[#257525] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating account...' : 'Register'}
             </button>
@@ -161,7 +161,7 @@ const SparrowRegister: React.FC = () => {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/sparrow/login" className="text-[#6C6A63] hover:text-[#3C3A33] font-medium">
+            <Link to="/sparrow/login" className="text-[#2E822E] hover:text-[#257525] font-medium">
               Login here
             </Link>
           </p>

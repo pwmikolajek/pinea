@@ -11,6 +11,7 @@ interface PdfRendererProps {
   comments: Comment[];
   previewComment: { page_number: number; x_position: number; y_position: number } | null;
   externalPage?: number;
+  showResolvedComments?: boolean;
   onAddComment: (pageNumber: number, x: number, y: number) => void;
   onCommentClick: (comment: Comment) => void;
   onToggleResolved: (comment: Comment) => void;
@@ -23,6 +24,7 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
   pdfUrl,
   comments,
   previewComment,
+  showResolvedComments = true,
   onAddComment,
   onCommentClick,
   onToggleResolved,
@@ -296,9 +298,11 @@ const PdfRenderer: React.FC<PdfRendererProps> = ({
     setScale((prev) => Math.max(prev - 0.25, 0.5));
   };
 
-  // Filter comments for current page
+  // Filter comments for current page and resolved status
   const pageComments = comments.filter(
-    (comment) => comment.page_number === currentPage
+    (comment) =>
+      comment.page_number === currentPage &&
+      (showResolvedComments || !comment.resolved)
   );
 
   // Check if preview comment is on current page

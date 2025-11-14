@@ -54,9 +54,13 @@
 }
 
 .pdf-card-header {
-  background: linear-gradient(135deg, #6C6A63 0%, #3C3A33 100%);
+  background: #6C6A63;
   color: white;
   padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .pdf-card-header h3 {
@@ -66,6 +70,28 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex: 1;
+}
+
+.btn-delete-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-delete-icon:hover {
+  background: #dc3545;
 }
 
 .version-badge {
@@ -100,7 +126,7 @@
 }
 
 .btn-view {
-  background-color: #6C6A63;
+  background-color: #2E822E;
   color: white;
   flex: 1;
   padding: 10px 20px;
@@ -112,7 +138,29 @@
 }
 
 .btn-view:hover {
-  background-color: #3C3A33;
+  background-color: #257525;
+}
+
+.btn-upload-version {
+  background-color: transparent;
+  color: #2E822E;
+  border: 2px solid #2E822E;
+  flex: 1;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.btn-upload-version:hover {
+  background-color: #e8f5e9;
+  border-color: #257525;
+  color: #257525;
 }
 
 .btn-delete {

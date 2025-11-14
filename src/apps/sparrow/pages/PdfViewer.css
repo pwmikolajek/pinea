@@ -32,7 +32,7 @@
 }
 
 .viewer-header .version-badge {
-  background: linear-gradient(135deg, #6C6A63 0%, #3C3A33 100%);
+  background: linear-gradient(135deg, #2E822E 0%, #257525 100%);
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
@@ -109,9 +109,33 @@
   overflow: hidden;
 }
 
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .comments-section h3 {
-  margin: 0 0 20px 0;
+  margin: 0;
   color: #3C3A33;
+}
+
+.btn-filter {
+  background-color: #2E822E;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-filter:hover {
+  background-color: #257525;
 }
 
 .comment-form {
@@ -156,12 +180,12 @@
 }
 
 .btn-primary {
-  background-color: #6C6A63;
+  background-color: #2E822E;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #3C3A33;
+  background-color: #257525;
 }
 
 .btn-cancel {
@@ -201,13 +225,23 @@
 
 .comment-item:hover {
   background: white;
-  border-color: #6C6A63;
-  box-shadow: 0 2px 8px rgba(108,106,99,0.1);
+  border-color: #2E822E;
+  box-shadow: 0 2px 8px rgba(46,130,46,0.1);
 }
 
 .comment-item.selected {
-  border-color: #6C6A63;
-  background: #E8E6DE;
+  border-color: #2E822E;
+  background: #e8f5e9;
+}
+
+.comment-item.resolved {
+  opacity: 0.6;
+  background: #f5f5f5;
+}
+
+.comment-item.resolved.selected {
+  opacity: 1;
+  background: #e8f5e9;
 }
 
 .comment-header {
@@ -223,7 +257,7 @@
 }
 
 .comment-page {
-  background: #6C6A63;
+  background: #2E822E;
   color: white;
   padding: 2px 8px;
   border-radius: 4px;
@@ -304,14 +338,14 @@
 }
 
 .thumbnail-item:hover {
-  border-color: #6C6A63;
-  box-shadow: 0 2px 8px rgba(108,106,99,0.15);
+  border-color: #2E822E;
+  box-shadow: 0 2px 8px rgba(46,130,46,0.15);
 }
 
 .thumbnail-item.active {
-  border-color: #6C6A63;
+  border-color: #2E822E;
   border-width: 2px;
-  background: #E8E6DE;
+  background: #e8f5e9;
 }
 
 .thumbnail-canvas {
@@ -337,7 +371,7 @@
 }
 
 .thumbnail-comment-count {
-  background: #6C6A63;
+  background: #2E822E;
   color: white;
   padding: 1px 4px;
   border-radius: 8px;
@@ -345,7 +379,7 @@
 }
 
 .thumbnail-comment-count.has-comments {
-  background: #6C6A63;
+  background: #2E822E;
 }
 
 @media (max-width: 1400px) {

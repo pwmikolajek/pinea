@@ -105,33 +105,7 @@ const LandingPage: React.FC = () => {
             status="available"
           />
         </div>
-        
-        <div className="bg-green-50 rounded-2xl p-8 border border-green-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            Why Pinea?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Privacy First</h3>
-              <p className="text-[#6C6A63]">
-                Most tools process locally in your browser. Collaboration features use secure cloud storage.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Eco-Friendly</h3>
-              <p className="text-[#6C6A63]">
-                We track the environmental impact of going digital and show you how many trees you're saving.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Simple & Beautiful</h3>
-              <p className="text-[#6C6A63]">
-                Intuitive interfaces that make digital work feel natural and enjoyable.
-              </p>
-            </div>
-          </div>
-        </div>
-        
+
         <footer className="mt-16 text-center text-sm text-[#6C6A63]">
           <p>
             Pinea - Made with 💚 for a greener planet

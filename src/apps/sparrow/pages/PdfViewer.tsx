@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
 import { pdfService, commentService } from '../services/firebaseService';
-import { mockProjectService } from '../services/mockDataService';
+import { mockProjectService, mockCommentService } from '../services/mockDataService';
 import { isLocalDevMode } from '../config/localDev';
 import PdfRenderer from '../components/PdfRenderer';
 import PdfThumbnails from '../components/PdfThumbnails';
@@ -44,6 +44,10 @@ const SparrowPdfViewer: React.FC = () => {
     y_position: number;
   } | null>(null);
   const [error, setError] = useState('');
+  const [showResolvedComments, setShowResolvedComments] = useState(false);
+
+  // Track if we've done the initial version selection
+  const hasSetInitialVersion = useRef(false);
 
   useEffect(() => {
     fetchPdfAndComments();
@@ -66,9 +70,10 @@ const SparrowPdfViewer: React.FC = () => {
 
         setProject(projectData);
 
-        // Set the selected version to the latest if not already set
-        if (selectedVersion === 1 && projectData.current_version > 1) {
+        // Set the selected version to the latest on initial load only
+        if (!hasSetInitialVersion.current && selectedVersion === 1 && projectData.current_version > 1) {
           setSelectedVersion(projectData.current_version);
+          hasSetInitialVersion.current = true;
         }
 
         // Get the version to display
@@ -82,11 +87,11 @@ const SparrowPdfViewer: React.FC = () => {
         // Set the PDF URL from the version
         setPdfUrl(versionToDisplay.file_path);
 
-        // Fetch all comments for the project (we'll filter client-side)
-        // For now, comments aren't version-specific in the storage, but we can add that later
-        // const commentsData = await mockCommentService.getByPdf(id);
-        // setComments(commentsData);
-        setComments([]); // TODO: Implement version-specific comments
+        // Fetch comments for this specific version
+        // Version ID format: ${projectId}_v${versionNumber}
+        const versionId = `${id}_v${selectedVersion}`;
+        const commentsData = await mockCommentService.getByPdf(versionId);
+        setComments(commentsData);
 
       } else {
         // Fetch single PDF details (legacy mode or Firebase mode)
@@ -150,15 +155,19 @@ const SparrowPdfViewer: React.FC = () => {
     if (!id || !user) return;
 
     try {
+      // Determine the correct service and ID to use
+      const service = isProjectView && isLocalDevMode ? mockCommentService : commentService;
+      const pdfId = isProjectView && isLocalDevMode ? `${id}_v${selectedVersion}` : id;
+
       if (selectedComment) {
         // Update existing comment
-        await commentService.update(selectedComment._docId, {
+        await service.update(selectedComment._docId, {
           content: commentData.content,
         });
       } else {
         // Create new comment
-        await commentService.create(
-          id,
+        await service.create(
+          pdfId,
           commentData.content,
           commentData.page_number,
           commentData.x_position,
@@ -174,7 +183,7 @@ const SparrowPdfViewer: React.FC = () => {
       setCommentData({ content: '', page_number: 1, x_position: 0, y_position: 0 });
 
       // Refresh comments
-      const commentsData = await commentService.getByPdf(id);
+      const commentsData = await service.getByPdf(pdfId);
       setComments(commentsData);
     } catch (error: any) {
       console.error('Error saving comment:', error);
@@ -187,12 +196,15 @@ const SparrowPdfViewer: React.FC = () => {
 
     if (window.confirm('Are you sure you want to delete this comment?')) {
       try {
-        await commentService.delete(selectedComment._docId);
+        const service = isProjectView && isLocalDevMode ? mockCommentService : commentService;
+        const pdfId = isProjectView && isLocalDevMode ? `${id}_v${selectedVersion}` : id;
+
+        await service.delete(selectedComment._docId);
         setShowCommentForm(false);
         setSelectedComment(null);
 
         // Refresh comments
-        const commentsData = await commentService.getByPdf(id);
+        const commentsData = await service.getByPdf(pdfId);
         setComments(commentsData);
       } catch (error: any) {
         console.error('Error deleting comment:', error);
@@ -205,10 +217,13 @@ const SparrowPdfViewer: React.FC = () => {
     if (!id) return;
 
     try {
-      await commentService.toggleResolved(comment._docId);
+      const service = isProjectView && isLocalDevMode ? mockCommentService : commentService;
+      const pdfId = isProjectView && isLocalDevMode ? `${id}_v${selectedVersion}` : id;
+
+      await service.toggleResolved(comment._docId);
 
       // Refresh comments to get updated resolved status
-      const commentsData = await commentService.getByPdf(id);
+      const commentsData = await service.getByPdf(pdfId);
       setComments(commentsData);
     } catch (error: any) {
       console.error('Error toggling resolved status:', error);
@@ -218,6 +233,9 @@ const SparrowPdfViewer: React.FC = () => {
 
   const handleCommentMove = async (comment: CommentWithFirebase, x: number, y: number) => {
     if (!id) return;
+
+    const service = isProjectView && isLocalDevMode ? mockCommentService : commentService;
+    const pdfId = isProjectView && isLocalDevMode ? `${id}_v${selectedVersion}` : id;
 
     // Optimistically update the UI immediately
     setComments(prevComments =>
@@ -229,20 +247,20 @@ const SparrowPdfViewer: React.FC = () => {
     );
 
     try {
-      await commentService.update(comment._docId, {
+      await service.update(comment._docId, {
         content: comment.content,
         x_position: x,
         y_position: y,
       });
 
       // Refresh comments to get the authoritative data
-      const commentsData = await commentService.getByPdf(id);
+      const commentsData = await service.getByPdf(pdfId);
       setComments(commentsData);
     } catch (error: any) {
       console.error('Error moving comment:', error);
       setError(error.message || 'Failed to move comment');
       // Revert on error
-      const commentsData = await commentService.getByPdf(id);
+      const commentsData = await service.getByPdf(pdfId);
       setComments(commentsData);
     }
   };
@@ -288,7 +306,7 @@ const SparrowPdfViewer: React.FC = () => {
               >
                 {project.versions.map((version) => (
                   <option key={version.version_number} value={version.version_number}>
-                    v{version.version_number} - {version.filename} ({new Date(version.uploaded_at).toLocaleDateString()})
+                    v{version.version_number} ({new Date(version.uploaded_at).toLocaleDateString()})
                   </option>
                 ))}
               </select>
@@ -308,6 +326,7 @@ const SparrowPdfViewer: React.FC = () => {
           currentPage={currentPage}
           onPageClick={setCurrentPage}
           comments={comments}
+          showResolvedComments={showResolvedComments}
         />
 
         <div className="pdf-section">
@@ -317,6 +336,7 @@ const SparrowPdfViewer: React.FC = () => {
               comments={comments}
               previewComment={previewComment}
               externalPage={currentPage}
+              showResolvedComments={showResolvedComments}
               onAddComment={handleAddComment}
               onCommentClick={handleCommentClick}
               onToggleResolved={handleToggleResolved}
@@ -328,7 +348,16 @@ const SparrowPdfViewer: React.FC = () => {
         </div>
 
         <div className="comments-section">
-          <h3>Comments ({comments.length})</h3>
+          <div className="comments-header">
+            <h3>Comments ({showResolvedComments ? comments.length : comments.filter(c => !c.resolved).length})</h3>
+            <button
+              onClick={() => setShowResolvedComments(!showResolvedComments)}
+              className="btn-filter"
+              title={showResolvedComments ? "Hide resolved comments" : "Show all comments"}
+            >
+              {showResolvedComments ? 'Hide Resolved' : 'Show All'}
+            </button>
+          </div>
 
           {showCommentForm && (
             <div className="comment-form">
@@ -377,15 +406,25 @@ const SparrowPdfViewer: React.FC = () => {
           )}
 
           <div className="comments-list">
-            {comments.length === 0 ? (
-              <p className="no-comments">No comments yet. Click on the PDF to add one!</p>
-            ) : (
-              comments.map((comment) => (
+            {(() => {
+              const filteredComments = showResolvedComments
+                ? comments
+                : comments.filter(c => !c.resolved);
+
+              if (filteredComments.length === 0) {
+                return <p className="no-comments">
+                  {comments.length === 0
+                    ? "No comments yet. Click on the PDF to add one!"
+                    : "No unresolved comments. Click 'Show All' to see resolved comments."}
+                </p>;
+              }
+
+              return filteredComments.map((comment) => (
                 <div
                   key={comment.id}
                   className={`comment-item ${
                     selectedComment?.id === comment.id ? 'selected' : ''
-                  }`}
+                  } ${comment.resolved ? 'resolved' : ''}`}
                   onClick={() => handleCommentClick(comment)}
                 >
                   <div className="comment-header">
@@ -395,8 +434,8 @@ const SparrowPdfViewer: React.FC = () => {
                   <div className="comment-content">{comment.content}</div>
                   <div className="comment-date">{formatDate(comment.created_at)}</div>
                 </div>
-              ))
-            )}
+              ));
+            })()}
           </div>
         </div>
       </div>

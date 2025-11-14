@@ -20,7 +20,7 @@ const SparrowDashboard: React.FC = () => {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [uploadingVersionForProject, setUploadingVersionForProject] = useState<string>('');
 
   const { user, logout } = useSparrowAuth();
   const navigate = useNavigate();
@@ -80,19 +80,13 @@ const SparrowDashboard: React.FC = () => {
 
     try {
       if (isLocalDevMode) {
-        if (selectedProjectId) {
-          // Add new version to existing project
-          await mockProjectService.addVersion(selectedProjectId, file, user.email, user.name);
-        } else {
-          // Create new project
-          await mockProjectService.create(file, title, user.email, user.name);
-        }
+        // Create new project
+        await mockProjectService.create(file, title, user.email, user.name);
       } else {
         await pdfService.upload(file, title, user.email, user.name);
       }
       setTitle('');
       setFile(null);
-      setSelectedProjectId('');
       setShowUploadForm(false);
       fetchData();
     } catch (error: any) {
@@ -126,6 +120,28 @@ const SparrowDashboard: React.FC = () => {
     }
   };
 
+  const handleVersionFileChange = async (projectId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && selectedFile.type === 'application/pdf' && user) {
+      setUploadingVersionForProject(projectId);
+      setError('');
+      try {
+        await mockProjectService.addVersion(projectId, selectedFile, user.email, user.name);
+        fetchData();
+      } catch (error: any) {
+        setError(error.message || 'Failed to upload new version');
+        alert(error.message || 'Failed to upload new version');
+      } finally {
+        setUploadingVersionForProject('');
+        // Reset the file input
+        e.target.value = '';
+      }
+    } else if (selectedFile) {
+      alert('Please select a PDF file');
+      e.target.value = '';
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -140,7 +156,7 @@ const SparrowDashboard: React.FC = () => {
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center text-[#6C6A63] hover:text-[#3C3A33] transition-colors"
+            className="inline-flex items-center text-[#2E822E] hover:text-[#257525] transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Apps
@@ -162,61 +178,35 @@ const SparrowDashboard: React.FC = () => {
 
         <div className="rounded-[15px] border border-[rgba(108,106,99,0.10)] bg-[#F9F8F6] shadow-[0px_100px_80px_0px_rgba(108,106,99,0.02)] p-6">
           <div className="dashboard-header">
-            <h2 className="text-xl font-medium text-gray-900">My PDFs</h2>
+            <h2 className="text-xl font-medium text-gray-900">My Projects</h2>
             <button
-              onClick={() => setShowUploadForm(!showUploadForm)}
-              className="px-4 py-2 bg-[#6C6A63] text-white text-sm font-medium rounded-md hover:bg-[#3C3A33] transition-colors"
+              onClick={() => {
+                setShowUploadForm(!showUploadForm);
+                setTitle('');
+                setFile(null);
+                setError('');
+              }}
+              className="px-4 py-2 bg-[#2E822E] text-white text-sm font-medium rounded-md hover:bg-[#257525] transition-colors"
             >
-              {showUploadForm ? 'Cancel' : 'Upload PDF'}
+              {showUploadForm ? 'Cancel' : 'New Project'}
             </button>
           </div>
 
           {showUploadForm && (
             <div className="upload-form">
-              <h3>{isLocalDevMode && selectedProjectId ? 'Upload New Version' : 'Upload New PDF'}</h3>
+              <h3>Create New Project</h3>
               <form onSubmit={handleUpload}>
-                {isLocalDevMode && projects.length > 0 && (
-                  <div className="form-group">
-                    <label htmlFor="project">Project (optional)</label>
-                    <select
-                      id="project"
-                      value={selectedProjectId}
-                      onChange={(e) => {
-                        setSelectedProjectId(e.target.value);
-                        if (e.target.value) {
-                          const project = projects.find(p => p.id === e.target.value);
-                          if (project) {
-                            setTitle(project.title);
-                          }
-                        }
-                      }}
-                      disabled={uploading}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">New Project</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.title} (v{project.current_version})
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select an existing project to upload a new version, or leave as "New Project"
-                    </p>
-                  </div>
-                )}
-
                 <div className="form-group">
-                  <label htmlFor="title">Title</label>
+                  <label htmlFor="title">Project Title</label>
                   <input
                     type="text"
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    required={!selectedProjectId}
-                    disabled={uploading || !!selectedProjectId}
+                    required
+                    disabled={uploading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder={selectedProjectId ? "Using existing project title" : "Project title"}
+                    placeholder="Enter project title"
                   />
                 </div>
 
@@ -237,10 +227,10 @@ const SparrowDashboard: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="mt-4 px-4 py-2 bg-[#6C6A63] text-white rounded-md hover:bg-[#3C3A33] disabled:opacity-50"
+                  className="mt-4 px-4 py-2 bg-[#2E822E] text-white rounded-md hover:bg-[#257525] disabled:opacity-50"
                   disabled={uploading}
                 >
-                  {uploading ? 'Uploading...' : selectedProjectId ? 'Upload New Version' : 'Upload'}
+                  {uploading ? 'Creating...' : 'Create Project'}
                 </button>
               </form>
             </div>
@@ -264,6 +254,13 @@ const SparrowDashboard: React.FC = () => {
                           {project.title}
                           <span className="version-badge">v{project.current_version}</span>
                         </h3>
+                        <button
+                          className="btn-delete-icon"
+                          onClick={() => handleDeleteProject(project.id)}
+                          title="Delete project"
+                        >
+                          ×
+                        </button>
                       </div>
                       <div className="pdf-card-body">
                         <p className="pdf-info">
@@ -275,9 +272,6 @@ const SparrowDashboard: React.FC = () => {
                         <p className="pdf-info">
                           <strong>Versions:</strong> {project.versions.length}
                         </p>
-                        <p className="pdf-info text-xs text-gray-500 mt-2">
-                          Latest: {latestVersion.filename}
-                        </p>
                       </div>
                       <div className="pdf-card-actions">
                         <button
@@ -286,9 +280,19 @@ const SparrowDashboard: React.FC = () => {
                         >
                           View & Comment
                         </button>
-                        <button className="btn-delete" onClick={() => handleDeleteProject(project.id)}>
-                          Delete
-                        </button>
+                        <label
+                          className="btn-upload-version"
+                          title="Upload new version"
+                        >
+                          {uploadingVersionForProject === project.id ? 'Uploading...' : 'Upload Version'}
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => handleVersionFileChange(project.id, e)}
+                            disabled={uploadingVersionForProject === project.id}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
                       </div>
                     </div>
                   );
@@ -316,9 +320,6 @@ const SparrowDashboard: React.FC = () => {
                       </p>
                       <p className="pdf-info">
                         <strong>Date:</strong> {formatDate(pdf.created_at)}
-                      </p>
-                      <p className="pdf-info">
-                        <strong>File:</strong> {pdf.filename}
                       </p>
                     </div>
                     <div className="pdf-card-actions">
