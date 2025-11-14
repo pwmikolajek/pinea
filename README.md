@@ -2,7 +2,7 @@
 
 **Simple, elegant tools that help you work more naturally with your digital content.**
 
-Pinea is a suite of browser-based productivity tools designed to make digital work feel natural and enjoyable. All processing happens locally in your browser - your files never leave your device.
+Pinea is a suite of productivity tools designed to make digital work feel natural and enjoyable. Most tools process files entirely in your browser, while collaborative features use secure server-side processing.
 
 ## Features
 
@@ -14,7 +14,7 @@ Pinea is a suite of browser-based productivity tools designed to make digital wo
 - **Swift** - YouTube Video Downloader
 
 ### 🔒 Privacy-First
-All file processing happens entirely in your browser. No uploads, no servers, just pure client-side magic.
+Robin and Falcon process files entirely in your browser - your files never leave your device. Sparrow uses secure server-side processing for real-time collaboration, while Swift requires server access for video downloading.
 
 ### 🌱 Eco-Friendly
 Track the environmental impact of going digital. See how many trees you're saving by not printing.
@@ -29,7 +29,8 @@ Clean, intuitive interfaces built with Tailwind CSS and modern React patterns.
 - **Styling**: Tailwind CSS
 - **PDF Processing**: pdf-lib, pdfjs-dist
 - **Drag & Drop**: @dnd-kit
-- **Backend**: Node.js, Express (for Swift - YouTube downloader)
+- **Backend**: Vercel Serverless Functions
+- **Deployment**: Vercel
 
 ## Project Structure
 
@@ -61,7 +62,7 @@ pinea/
 │   │   ├── styles/            # Global CSS
 │   │   └── utils/             # Shared utilities
 │   └── main.tsx               # App entry point
-├── backend/                    # Swift backend (YouTube downloader)
+├── api/                        # Vercel serverless functions
 └── public/                     # Static assets
 ```
 
@@ -78,36 +79,28 @@ pinea/
    npm install
    ```
 
-3. **Install backend dependencies** (for Swift - YouTube downloader)
-   ```bash
-   cd backend
-   npm install
-   cd ..
-   ```
+3. **Set up environment variables** (see Environment Variables section below)
 
 ## Usage
 
 ### Development
 
-1. **Start the frontend dev server**
-   ```bash
-   npm run dev
-   ```
-   Open http://localhost:5173
+**Start the dev server:**
+```bash
+npm run dev
+```
+Open http://localhost:5173
 
-2. **Start the backend server** (optional - only needed for Swift)
-   ```bash
-   cd backend
-   node server.js
-   ```
-   Backend runs on http://localhost:5002
+**Note:** Sparrow and Swift require Vercel serverless functions. For local development of these features, use `vercel dev` or deploy to Vercel.
 
 ### Production
 
+**Deploy to Vercel:**
 ```bash
-npm run build
-npm run preview
+vercel --prod
 ```
+
+Or connect your GitHub repository to Vercel for automatic deployments.
 
 ## Applications
 
@@ -149,7 +142,7 @@ Collaborate on PDFs with real-time commenting.
 
 **Usage:** Navigate to `/sparrow/login`
 
-**Note:** Requires separate backend server (not included in this repo)
+**Note:** Uses Vercel serverless functions for backend functionality
 
 ### Swift - YouTube Downloader
 
@@ -163,11 +156,18 @@ Download YouTube videos for your content creation needs.
 
 **Usage:** Navigate to `/yt-dlp`
 
-**Note:** Requires backend server running on port 5002
+**Note:** Uses Vercel serverless functions for video processing
 
 ## Environment Variables
 
-No environment variables needed for basic functionality. All apps work entirely in the browser except Swift (YouTube downloader).
+For Sparrow (PDF Commenting), you'll need to set up the following in your `.env` file or Vercel environment variables:
+
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Robin and Falcon work entirely in the browser and require no environment variables.
 
 ## Browser Support
 
@@ -185,12 +185,19 @@ MIT License - feel free to use this project for personal or commercial purposes.
 
 ## Privacy & Security
 
-All file processing for Robin, Falcon happens entirely in your browser using:
-- **Client-side libraries**: pdf-lib, pdfjs-dist, jspdf
-- **No server uploads**: Your files never leave your device
-- **No tracking**: No analytics or tracking scripts
+**Client-Side Tools (Robin, Falcon):**
+- All file processing happens entirely in your browser using pdf-lib, pdfjs-dist, and jspdf
+- Your files never leave your device
+- No server uploads required
 
-For Sparrow and Swift, minimal data is sent to backend servers for collaboration and video downloading features.
+**Server-Side Tools (Sparrow, Swift):**
+- Sparrow uses Vercel serverless functions for real-time collaboration features
+- Swift uses backend services for YouTube video downloading
+- Data is processed securely and not stored permanently
+
+**All Tools:**
+- No analytics or tracking scripts
+- No data sold to third parties
 
 ## Acknowledgments
 
