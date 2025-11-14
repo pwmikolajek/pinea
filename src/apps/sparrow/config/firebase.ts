@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 // Firebase configuration
 // These values will come from environment variables
@@ -13,22 +13,27 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if Firebase config is available
+const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.projectId;
 
-// Initialize Firebase Authentication
-export const auth = getAuth(app);
+// Initialize Firebase only if configured
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
-// Initialize Firestore
-export const db = getFirestore(app);
+if (isFirebaseConfigured) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
 
-// Configure Google Provider
-export const googleProvider = new GoogleAuthProvider();
+  // Set custom parameters for the provider
+  googleProvider.setCustomParameters({
+    prompt: 'select_account', // Always show account selection
+    hd: 'humanmade.com', // Restrict to humanmade.com domain
+  });
+}
 
-// Set custom parameters for the provider
-googleProvider.setCustomParameters({
-  prompt: 'select_account', // Always show account selection
-  hd: 'humanmade.com', // Restrict to humanmade.com domain
-});
-
+export { auth, db, googleProvider };
 export default app;

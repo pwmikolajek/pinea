@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
 import { pdfService, commentService } from '../services/firebaseService';
+import { mockProjectService } from '../services/mockDataService';
+import { isLocalDevMode } from '../config/localDev';
 import PdfRenderer from '../components/PdfRenderer';
 import PdfThumbnails from '../components/PdfThumbnails';
-import { PDF, Comment, CommentData } from '../types';
+import { PDF, Comment, CommentData, Project } from '../types';
 import * as pdfjsLib from 'pdfjs-dist';
 import './PdfViewer.css';
 
@@ -15,8 +17,14 @@ const SparrowPdfViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useSparrowAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect if we're viewing a project or a single PDF
+  const isProjectView = location.pathname.startsWith('/sparrow/project/');
 
   const [pdf, setPdf] = useState<PDF | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<number>(1);
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +47,7 @@ const SparrowPdfViewer: React.FC = () => {
 
   useEffect(() => {
     fetchPdfAndComments();
-  }, [id]);
+  }, [id, selectedVersion]);
 
   const fetchPdfAndComments = async () => {
     if (!id) return;
@@ -47,21 +55,56 @@ const SparrowPdfViewer: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch PDF details from Firebase
-      const pdfData = await pdfService.getById(id);
-      if (!pdfData) {
-        setError('PDF not found');
-        setLoading(false);
-        return;
+      if (isProjectView && isLocalDevMode) {
+        // Fetch project data in local dev mode
+        const projectData = await mockProjectService.getById(id);
+        if (!projectData) {
+          setError('Project not found');
+          setLoading(false);
+          return;
+        }
+
+        setProject(projectData);
+
+        // Set the selected version to the latest if not already set
+        if (selectedVersion === 1 && projectData.current_version > 1) {
+          setSelectedVersion(projectData.current_version);
+        }
+
+        // Get the version to display
+        const versionToDisplay = projectData.versions.find(v => v.version_number === selectedVersion);
+        if (!versionToDisplay) {
+          setError('Version not found');
+          setLoading(false);
+          return;
+        }
+
+        // Set the PDF URL from the version
+        setPdfUrl(versionToDisplay.file_path);
+
+        // Fetch all comments for the project (we'll filter client-side)
+        // For now, comments aren't version-specific in the storage, but we can add that later
+        // const commentsData = await mockCommentService.getByPdf(id);
+        // setComments(commentsData);
+        setComments([]); // TODO: Implement version-specific comments
+
+      } else {
+        // Fetch single PDF details (legacy mode or Firebase mode)
+        const pdfData = await pdfService.getById(id);
+        if (!pdfData) {
+          setError('PDF not found');
+          setLoading(false);
+          return;
+        }
+
+        setPdf(pdfData);
+        // Use Firebase download URL
+        setPdfUrl(pdfData._downloadURL);
+
+        // Fetch comments
+        const commentsData = await commentService.getByPdf(id);
+        setComments(commentsData);
       }
-
-      setPdf(pdfData);
-      // Use Firebase download URL
-      setPdfUrl(pdfData._downloadURL);
-
-      // Fetch comments
-      const commentsData = await commentService.getByPdf(id);
-      setComments(commentsData);
 
       setLoading(false);
     } catch (error) {
@@ -229,11 +272,34 @@ const SparrowPdfViewer: React.FC = () => {
           <ArrowLeft className="inline h-4 w-4 mr-1" />
           Back to Dashboard
         </button>
-        <h2>
-          {pdf?.base_title || pdf?.title}
-          {pdf?.version && <span className="version-badge">v{pdf?.version}</span>}
-        </h2>
-        <div className="header-info">Uploaded by {pdf?.uploader_name}</div>
+        <div className="header-title-section">
+          <h2>
+            {isProjectView ? project?.title : (pdf?.base_title || pdf?.title)}
+            {!isProjectView && pdf?.version && <span className="version-badge">v{pdf?.version}</span>}
+          </h2>
+          {isProjectView && project && (
+            <div className="version-selector">
+              <label htmlFor="version-select">Version:</label>
+              <select
+                id="version-select"
+                value={selectedVersion}
+                onChange={(e) => setSelectedVersion(parseInt(e.target.value))}
+                className="px-3 py-1 border border-gray-300 rounded-md bg-white"
+              >
+                {project.versions.map((version) => (
+                  <option key={version.version_number} value={version.version_number}>
+                    v{version.version_number} - {version.filename} ({new Date(version.uploaded_at).toLocaleDateString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="header-info">
+          {isProjectView && project
+            ? `Created by ${project.created_by_name}`
+            : `Uploaded by ${pdf?.uploader_name}`}
+        </div>
       </div>
 
       <div className="viewer-content">

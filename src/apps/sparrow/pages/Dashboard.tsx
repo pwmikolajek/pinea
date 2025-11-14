@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useSparrowAuth } from '../contexts/AuthContext';
 import { pdfService } from '../services/firebaseService';
-import { PDF } from '../types';
+import { mockProjectService } from '../services/mockDataService';
+import { isLocalDevMode } from '../config/localDev';
+import { PDF, Project } from '../types';
 import logo from '../../../core/assets/logo.svg';
 import './Dashboard.css';
 
@@ -11,27 +13,34 @@ type PDFWithFirebase = PDF & { _docId: string; _downloadURL: string };
 
 const SparrowDashboard: React.FC = () => {
   const [pdfs, setPdfs] = useState<PDFWithFirebase[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   const { user, logout } = useSparrowAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPdfs();
+    fetchData();
   }, []);
 
-  const fetchPdfs = async () => {
+  const fetchData = async () => {
     try {
-      const fetchedPdfs = await pdfService.getAll();
-      setPdfs(fetchedPdfs);
+      if (isLocalDevMode) {
+        const fetchedProjects = await mockProjectService.getAll();
+        setProjects(fetchedProjects);
+      } else {
+        const fetchedPdfs = await pdfService.getAll();
+        setPdfs(fetchedPdfs);
+      }
     } catch (error: any) {
-      console.error('Error fetching PDFs:', error);
-      setError('Failed to fetch PDFs');
+      console.error('Error fetching data:', error);
+      setError('Failed to fetch data');
     } finally {
       setLoading(false);
     }
@@ -70,11 +79,22 @@ const SparrowDashboard: React.FC = () => {
     setError('');
 
     try {
-      await pdfService.upload(file, title, user.email, user.name);
+      if (isLocalDevMode) {
+        if (selectedProjectId) {
+          // Add new version to existing project
+          await mockProjectService.addVersion(selectedProjectId, file, user.email, user.name);
+        } else {
+          // Create new project
+          await mockProjectService.create(file, title, user.email, user.name);
+        }
+      } else {
+        await pdfService.upload(file, title, user.email, user.name);
+      }
       setTitle('');
       setFile(null);
+      setSelectedProjectId('');
       setShowUploadForm(false);
-      fetchPdfs();
+      fetchData();
     } catch (error: any) {
       setError(error.message || 'Failed to upload PDF');
     } finally {
@@ -86,10 +106,22 @@ const SparrowDashboard: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this PDF?')) {
       try {
         await pdfService.delete(docId);
-        fetchPdfs();
+        fetchData();
       } catch (error) {
         console.error('Error deleting PDF:', error);
         alert('Failed to delete PDF');
+      }
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (window.confirm('Are you sure you want to delete this project and all its versions?')) {
+      try {
+        await mockProjectService.delete(projectId);
+        fetchData();
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        alert('Failed to delete project');
       }
     }
   };
@@ -133,7 +165,7 @@ const SparrowDashboard: React.FC = () => {
             <h2 className="text-xl font-medium text-gray-900">My PDFs</h2>
             <button
               onClick={() => setShowUploadForm(!showUploadForm)}
-              className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-[#6C6A63] text-white text-sm font-medium rounded-md hover:bg-[#3C3A33] transition-colors"
             >
               {showUploadForm ? 'Cancel' : 'Upload PDF'}
             </button>
@@ -141,8 +173,39 @@ const SparrowDashboard: React.FC = () => {
 
           {showUploadForm && (
             <div className="upload-form">
-              <h3>Upload New PDF</h3>
+              <h3>{isLocalDevMode && selectedProjectId ? 'Upload New Version' : 'Upload New PDF'}</h3>
               <form onSubmit={handleUpload}>
+                {isLocalDevMode && projects.length > 0 && (
+                  <div className="form-group">
+                    <label htmlFor="project">Project (optional)</label>
+                    <select
+                      id="project"
+                      value={selectedProjectId}
+                      onChange={(e) => {
+                        setSelectedProjectId(e.target.value);
+                        if (e.target.value) {
+                          const project = projects.find(p => p.id === e.target.value);
+                          if (project) {
+                            setTitle(project.title);
+                          }
+                        }
+                      }}
+                      disabled={uploading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">New Project</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.title} (v{project.current_version})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select an existing project to upload a new version, or leave as "New Project"
+                    </p>
+                  </div>
+                )}
+
                 <div className="form-group">
                   <label htmlFor="title">Title</label>
                   <input
@@ -150,9 +213,10 @@ const SparrowDashboard: React.FC = () => {
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    required
-                    disabled={uploading}
+                    required={!selectedProjectId}
+                    disabled={uploading || !!selectedProjectId}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder={selectedProjectId ? "Using existing project title" : "Project title"}
                   />
                 </div>
 
@@ -173,56 +237,105 @@ const SparrowDashboard: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="mt-4 px-4 py-2 bg-[#6C6A63] text-white rounded-md hover:bg-[#3C3A33] disabled:opacity-50"
                   disabled={uploading}
                 >
-                  {uploading ? 'Uploading...' : 'Upload'}
+                  {uploading ? 'Uploading...' : selectedProjectId ? 'Upload New Version' : 'Upload'}
                 </button>
               </form>
             </div>
           )}
 
           {loading ? (
-            <div className="loading">Loading PDFs...</div>
-          ) : pdfs.length === 0 ? (
-            <div className="no-pdfs">
-              <p>No PDFs uploaded yet. Upload your first PDF to get started!</p>
-            </div>
+            <div className="loading">Loading...</div>
+          ) : isLocalDevMode ? (
+            projects.length === 0 ? (
+              <div className="no-pdfs">
+                <p>No projects yet. Upload your first PDF to create a project!</p>
+              </div>
+            ) : (
+              <div className="pdf-grid">
+                {projects.map((project) => {
+                  const latestVersion = project.versions[project.versions.length - 1];
+                  return (
+                    <div key={project.id} className="pdf-card">
+                      <div className="pdf-card-header">
+                        <h3>
+                          {project.title}
+                          <span className="version-badge">v{project.current_version}</span>
+                        </h3>
+                      </div>
+                      <div className="pdf-card-body">
+                        <p className="pdf-info">
+                          <strong>Created by:</strong> {project.created_by_name}
+                        </p>
+                        <p className="pdf-info">
+                          <strong>Last updated:</strong> {formatDate(latestVersion.uploaded_at)}
+                        </p>
+                        <p className="pdf-info">
+                          <strong>Versions:</strong> {project.versions.length}
+                        </p>
+                        <p className="pdf-info text-xs text-gray-500 mt-2">
+                          Latest: {latestVersion.filename}
+                        </p>
+                      </div>
+                      <div className="pdf-card-actions">
+                        <button
+                          className="btn-view"
+                          onClick={() => navigate(`/sparrow/project/${project.id}`)}
+                        >
+                          View & Comment
+                        </button>
+                        <button className="btn-delete" onClick={() => handleDeleteProject(project.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
           ) : (
-            <div className="pdf-grid">
-              {pdfs.map((pdf) => (
-                <div key={pdf._docId} className="pdf-card">
-                  <div className="pdf-card-header">
-                    <h3>
-                      {pdf.base_title || pdf.title}
-                      {pdf.version && <span className="version-badge">v{pdf.version}</span>}
-                    </h3>
+            pdfs.length === 0 ? (
+              <div className="no-pdfs">
+                <p>No PDFs uploaded yet. Upload your first PDF to get started!</p>
+              </div>
+            ) : (
+              <div className="pdf-grid">
+                {pdfs.map((pdf) => (
+                  <div key={pdf._docId} className="pdf-card">
+                    <div className="pdf-card-header">
+                      <h3>
+                        {pdf.base_title || pdf.title}
+                        {pdf.version && <span className="version-badge">v{pdf.version}</span>}
+                      </h3>
+                    </div>
+                    <div className="pdf-card-body">
+                      <p className="pdf-info">
+                        <strong>Uploaded by:</strong> {pdf.uploader_name}
+                      </p>
+                      <p className="pdf-info">
+                        <strong>Date:</strong> {formatDate(pdf.created_at)}
+                      </p>
+                      <p className="pdf-info">
+                        <strong>File:</strong> {pdf.filename}
+                      </p>
+                    </div>
+                    <div className="pdf-card-actions">
+                      <button
+                        className="btn-view"
+                        onClick={() => navigate(`/sparrow/pdf/${pdf._docId}`)}
+                      >
+                        View & Comment
+                      </button>
+                      <button className="btn-delete" onClick={() => handleDelete(pdf._docId)}>
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="pdf-card-body">
-                    <p className="pdf-info">
-                      <strong>Uploaded by:</strong> {pdf.uploader_name}
-                    </p>
-                    <p className="pdf-info">
-                      <strong>Date:</strong> {formatDate(pdf.created_at)}
-                    </p>
-                    <p className="pdf-info">
-                      <strong>File:</strong> {pdf.filename}
-                    </p>
-                  </div>
-                  <div className="pdf-card-actions">
-                    <button
-                      className="btn-view"
-                      onClick={() => navigate(`/sparrow/pdf/${pdf._docId}`)}
-                    >
-                      View & Comment
-                    </button>
-                    <button className="btn-delete" onClick={() => handleDelete(pdf._docId)}>
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

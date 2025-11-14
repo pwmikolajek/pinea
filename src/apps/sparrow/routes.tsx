@@ -70,4 +70,14 @@ export const sparrowRoutes: RouteObject[] = [
       </SparrowAuthProvider>
     ),
   },
+  {
+    path: '/sparrow/project/:id',
+    element: (
+      <SparrowAuthProvider>
+        <ProtectedRoute>
+          <PdfViewer />
+        </ProtectedRoute>
+      </SparrowAuthProvider>
+    ),
+  },
 ];

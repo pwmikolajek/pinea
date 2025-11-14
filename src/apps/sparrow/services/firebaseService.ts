@@ -13,11 +13,17 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { PDF, Comment } from '../types';
+import { isLocalDevMode } from '../config/localDev';
+import { mockPdfService, mockCommentService } from './mockDataService';
 
 // PDF Service
 export const pdfService = {
   // Upload a PDF file
   upload: async (file: File, title: string, userId: string, userName: string): Promise<PDF> => {
+    if (isLocalDevMode) {
+      return mockPdfService.upload(file, title, userId, userName);
+    }
+
     try {
       // Upload using Vercel Blob client-side upload
       const timestamp = Date.now();
@@ -65,6 +71,10 @@ export const pdfService = {
 
   // Get all PDFs
   getAll: async (): Promise<(PDF & { _docId: string; _downloadURL: string })[]> => {
+    if (isLocalDevMode) {
+      return mockPdfService.getAll();
+    }
+
     try {
       const q = query(collection(db, 'pdfs'), orderBy('created_at', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -91,6 +101,10 @@ export const pdfService = {
 
   // Get PDF by ID
   getById: async (docId: string): Promise<(PDF & { _docId: string; _downloadURL: string }) | null> => {
+    if (isLocalDevMode) {
+      return mockPdfService.getById(docId);
+    }
+
     try {
       const docRef = doc(db, 'pdfs', docId);
       const docSnap = await getDoc(docRef);
@@ -119,6 +133,10 @@ export const pdfService = {
 
   // Delete PDF
   delete: async (docId: string): Promise<void> => {
+    if (isLocalDevMode) {
+      return mockPdfService.delete(docId);
+    }
+
     try {
       // Get PDF document
       const docRef = doc(db, 'pdfs', docId);
@@ -167,6 +185,10 @@ export const commentService = {
     userId: string,
     userName: string
   ): Promise<Comment> => {
+    if (isLocalDevMode) {
+      return mockCommentService.create(pdfDocId, content, pageNumber, xPosition, yPosition, userId, userName);
+    }
+
     try {
       const commentData = {
         pdf_id: pdfDocId,
@@ -203,6 +225,10 @@ export const commentService = {
 
   // Get comments by PDF
   getByPdf: async (pdfDocId: string): Promise<(Comment & { _docId: string })[]> => {
+    if (isLocalDevMode) {
+      return mockCommentService.getByPdf(pdfDocId);
+    }
+
     try {
       const q = query(
         collection(db, 'comments'),
@@ -238,6 +264,10 @@ export const commentService = {
     docId: string,
     updates: { content?: string; x_position?: number; y_position?: number }
   ): Promise<void> => {
+    if (isLocalDevMode) {
+      return mockCommentService.update(docId, updates);
+    }
+
     try {
       const docRef = doc(db, 'comments', docId);
       await updateDoc(docRef, updates);
@@ -249,6 +279,10 @@ export const commentService = {
 
   // Toggle resolved status
   toggleResolved: async (docId: string): Promise<void> => {
+    if (isLocalDevMode) {
+      return mockCommentService.toggleResolved(docId);
+    }
+
     try {
       const docRef = doc(db, 'comments', docId);
       const docSnap = await getDoc(docRef);
@@ -265,6 +299,10 @@ export const commentService = {
 
   // Delete comment
   delete: async (docId: string): Promise<void> => {
+    if (isLocalDevMode) {
+      return mockCommentService.delete(docId);
+    }
+
     try {
       const docRef = doc(db, 'comments', docId);
       await deleteDoc(docRef);

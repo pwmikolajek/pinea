@@ -3,6 +3,7 @@ import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { authAPI } from '../services/api';
 import { User } from '../types';
+import { isLocalDevMode, LOCAL_STORAGE_KEYS } from '../config/localDev';
 
 interface AuthContextType {
   user: User | null;
@@ -31,16 +32,38 @@ export const SparrowAuthProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem('sparrow_token');
-    const userData = localStorage.getItem('sparrow_user');
+    if (isLocalDevMode) {
+      const userData = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_USER);
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    } else {
+      const token = localStorage.getItem('sparrow_token');
+      const userData = localStorage.getItem('sparrow_user');
 
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+      if (token && userData) {
+        setUser(JSON.parse(userData));
+      }
     }
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (isLocalDevMode) {
+      // Mock login for local development
+      const mockUser: User = {
+        id: 1,
+        email: email,
+        name: email.split('@')[0],
+      };
+
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_USER, JSON.stringify(mockUser));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, 'mock-token-' + Date.now());
+      setUser(mockUser);
+
+      return { success: true };
+    }
+
     try {
       const response = await authAPI.login({ email, password });
       const { token, user } = response.data;
@@ -59,6 +82,21 @@ export const SparrowAuthProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   const register = async (email: string, password: string, name: string) => {
+    if (isLocalDevMode) {
+      // Mock registration for local development
+      const mockUser: User = {
+        id: 1,
+        email: email,
+        name: name,
+      };
+
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_USER, JSON.stringify(mockUser));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, 'mock-token-' + Date.now());
+      setUser(mockUser);
+
+      return { success: true };
+    }
+
     try {
       const response = await authAPI.register({ email, password, name });
       const { token, user } = response.data;
@@ -77,6 +115,13 @@ export const SparrowAuthProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   const loginWithGoogle = async () => {
+    if (!auth || !googleProvider) {
+      return {
+        success: false,
+        error: 'Firebase is not configured. Please set up Firebase environment variables.',
+      };
+    }
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
@@ -115,10 +160,18 @@ export const SparrowAuthProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   const logout = async () => {
+    if (isLocalDevMode) {
+      // Mock logout for local development
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_USER);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      setUser(null);
+      return;
+    }
+
     const authProvider = localStorage.getItem('sparrow_auth_provider');
 
     // Sign out from Firebase if using Google auth
-    if (authProvider === 'google') {
+    if (authProvider === 'google' && auth) {
       try {
         await firebaseSignOut(auth);
       } catch (error) {

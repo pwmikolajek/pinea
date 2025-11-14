@@ -54,7 +54,7 @@
 }
 
 .pdf-card-header {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #6C6A63 0%, #3C3A33 100%);
   color: white;
   padding: 20px;
 }
@@ -100,7 +100,7 @@
 }
 
 .btn-view {
-  background-color: #22c55e;
+  background-color: #6C6A63;
   color: white;
   flex: 1;
   padding: 10px 20px;
@@ -112,7 +112,7 @@
 }
 
 .btn-view:hover {
-  background-color: #16a34a;
+  background-color: #3C3A33;
 }
 
 .btn-delete {
